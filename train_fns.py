@@ -330,7 +330,7 @@ def AE_train_fn(AE, AE_optim, loss_fn, config):
         # Save output periodically - concatenate the model outputs with the
         # images it was supposed to reconstruct in order to visualize the
         # model evolution during training.
-        if itr % 20 == 0:
+        if itr % 100 == 0:
             # Arrange training data and model outputs on
             # alternating rows for easy visual comparison.
             row1 = x[0:config['sample_size']//2, :]
@@ -373,8 +373,13 @@ def Conv_AE_train_fn(AE, AE_optim, loss_fn, config):
         # Forward pass
         output = AE(x)
 
-        # Compare output to real data
-        loss = loss_fn(output, x)
+        # Compute L1 regularization
+        # L1 = 0
+        # for param in AE.parameters():
+            # L1 += param.abs().sum()
+
+        # Compare output to real data and add L1 reg.
+        loss = loss_fn(output, x) # + (1e-6 * L1)
 
         # Backprop and update weights
         AE_optim.zero_grad()

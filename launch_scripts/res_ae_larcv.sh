@@ -4,18 +4,18 @@ CUDA_VISIBLE_DEVICES=0,1 python3 ../train.py \
 --gpu 1 \
 --dataset 64 \
 --batch_size 250 \
---num_epochs 1000 \
+--num_epochs 2500 \
 --sample_size 16 \
 --shuffle True \
 --drop_last True \
 --num_workers 8 \
---model conv_ae \
+--model res_ae \
 --depth 32 \
 --n_layers 4 \
 --l_dim 512 \
---ae_lr 1e-4 \
+--ae_lr 1e-3 \
 --ae_opt adam \
 --loss_fn mse \
 --beta 0.5 \
---data_root /home/plutku01/data/LArCV/train/ \
+--data_root /home/plutku01/oneImageSet/ \
 --save_root /home/plutku01/projects/particle_generator/experiments/

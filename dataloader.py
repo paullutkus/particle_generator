@@ -6,7 +6,7 @@
 # Date: 10.15.2019
 # Purpose: - This file provides dataloading functionality for training
 #            a generative model using the LArCV1 dataset
-#          - The LArCV1 dataloader class inherits from the torch absract
+#          - The LArCV1 dataloader class inherits from the torch abstract
 #            dataset class: torch.utils.data.Dataset
 #               - The following methods are overriden:
 #                   - __len__ so that len(dataset) returns the dataset size
