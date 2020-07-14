@@ -16,6 +16,9 @@ test_scripts/data/*
 /dataset_analysis/MNIST/
 /deploy_analysis/*.png
 
+# Results
+experiments
+experiments/*
 
 # Visual Studio Files
 *.vscode
