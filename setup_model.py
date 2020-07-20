@@ -101,7 +101,7 @@ def get_ae_kwargs(config):
             # Update kwarg dicts
             # Decoder is the reverse of the encoder
             kwargs.update({'enc_depth' : [1] + depth,
-                           'dec_depth' : depth[1:len(depth)][::-1] + [1],
+                           'dec_depth' : depth[1:len(depth)][::-1] + [4] + [1],
                            'l_dim'     : l_dim })
         else: # Manually set the values for the MNIST experiment
             kwargs.update( { 'enc_depth': [1, 16, 4],

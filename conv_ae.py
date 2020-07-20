@@ -7,6 +7,7 @@ import torchvision
 
 from layers import *
 
+
 class ConvEncoder(nn.Module):
     '''
         Convolutional AutoEncoder - Encoder branch
@@ -22,10 +23,22 @@ class ConvEncoder(nn.Module):
         super().__init__()
         self.conv_blocks = nn.Sequential(*[ConvBlock_BN(in_f, out_f) for in_f, out_f
                                            in zip(depth, depth[1:])])
-        self.last = nn.Conv2d(depth[-1], l_dim, kernel_size = 3, padding = 1)
+        
+        self.fc = nn.Linear(64*4*4, l_dim)
+        self.fc.weight.data.copy_(torch.eye(l_dim, 64*4*4))
+        self.relu = nn.ReLU(inplace=True)
+        # self.last = nn.Conv2d(depth[-1], depth[-1]*2, kernel_size=3, padding=1)
 
     def forward(self, x):
-        return self.last(self.conv_blocks(x))
+        x = self.conv_blocks(x)
+        # x = self.last(x)
+        # print(x.shape)
+        x = x.view(x.size(0), -1)
+        # print(x.shape)
+        x = self.fc(x)
+        x = self.relu(x)
+        return x
+        
 
 class ConvDecoder(nn.Module):
     '''
@@ -38,11 +51,24 @@ class ConvDecoder(nn.Module):
     '''
     def __init__(self, depth, l_dim):
         super().__init__()
+        self.fc = nn.Linear(l_dim, 64*4*4)
+        self.fc.weight.data.copy_(torch.eye(64*4*4, l_dim))
+        self.relu = nn.ReLU(inplace=True)
+        # self.first = nn.Conv2d(depth[-1] * 2, depth[-1], kernel_size=3, padding=1) 
         self.deconv_blocks = nn.Sequential(*[DeconvBlock(in_f, out_f) for in_f, out_f
                                               in zip(depth, depth[1:])])
         self.activation = nn.Tanh()
     def forward(self, x):
-        return self.activation(self.deconv_blocks(x))
+        x = self.fc(x)
+        x = self.relu(x)
+        # print(x.shape)
+        x = torch.reshape(x, (-1, 64, 4, 4))
+        # print(x.shape)
+        # x = first(x)
+        # print(x.shape)
+        x = self.activation(self.deconv_blocks(x))
+        return x
+
 
 class ConvAutoEncoder(nn.Module):
     '''
@@ -54,7 +80,7 @@ class ConvAutoEncoder(nn.Module):
         super().__init__()
         self.l_dim        = l_dim                # Computed in setup_model.py
         self.enc_features = enc_depth            # [1] + [4, 8, 16, 32]
-        self.dec_features = [l_dim] + dec_depth  # [l_dim] + [32, 16, 8] + [1]
+        self.dec_features = dec_depth # [l_dim] + dec_depth  # [l_dim] + [32, 16, 8] + [1]
         self.encoder = ConvEncoder(self.enc_features, self.l_dim)
         self.decoder = ConvDecoder(self.dec_features, self.l_dim)
 

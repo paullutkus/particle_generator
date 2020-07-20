@@ -20,11 +20,12 @@ plots = csv.reader(csvfile, delimiter=',')
 data_list = list(plots)
 
 plt.plot(y)
+plt.yscale('log')
 plt.xlabel('It.')
 plt.ylabel('Loss')
 plt.title("AE Loss")
-text = "final loss: " + str(round(float(data_list[-1][0]), 3))
-plt.text(len(data_list)-50000, 0.4, text)
+text = "Final Loss: " + str(round(float(data_list[-1][0]), 3))
+plt.text(len(data_list)-9000, 0.1, text)
 
 csvfile.close()
 
