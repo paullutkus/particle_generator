@@ -60,6 +60,7 @@ class ewm_G(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
+        #print(x.shape)
         return self.out(self.fc(x))
 
 class ewm_convG(nn.Module):

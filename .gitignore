@@ -19,6 +19,10 @@ test_scripts/data/*
 # Results
 experiments
 experiments/*
+code_vectors_test
+code_vectors_test/*
+code_vectors_target
+code_vectors_target/*
 
 # Visual Studio Files
 *.vscode

@@ -74,8 +74,8 @@ def train(config):
     # (Credit: Chen, arXiv:1906.03471, GitHub: https://github.com/chen0706/EWM)
     from torch.utils.cpp_extension import load
     my_ops = load(name = "my_ops",
-                  sources = ["W1_extension/my_ops.cpp",
-                             "W1_extension/my_ops_kernel.cu"],
+                  sources = ["../W1_extension/my_ops.cpp",
+                             "../W1_extension/my_ops_kernel.cu"],
                   verbose = False)
     import my_ops
 
@@ -87,7 +87,10 @@ def train(config):
 
     # Setup model on GPU
     G = ewm_G(**emw_kwargs).to(device)
+    #state = torch.load('/home/plutku01/projects/particle_generator/saved_gen.pth')
+    #G.load_state_dict(state['state_dict'])
     G.weights_init()
+    #G.load_state_dict(torch.load('/home/plutku01/projects/particle_generator/saved_gen.pth'))
 
     print(G)
     input('Press any key to launch')
@@ -95,10 +98,12 @@ def train(config):
     # Setup model optimizer
     model_params = {'g_params': G.parameters()}
     G_optim = utils.get_optim(config, model_params)
+    #G_optim.load_state_dict(state['optimizer'])
 
     # Set up full_dataloader (single batch)
     dataloader = utils.get_dataloader(config) # Full Dataloader
-    dset_size  = len(dataloader)
+    dset_size  = len(dataloader) # 10000
+    print('dset_size:', dset_size)
 
     # Flatten the dataloader into a Tensor of shape [dset_size, l_dim]
     dataloader = dataloader.view(dset_size, -1).to(device)
@@ -151,7 +156,8 @@ def train(config):
     
     # Set up progress bar for terminal output and enumeration
     epoch_bar  = tqdm([i for i in range(config['num_epochs'])])
-    
+    #epoch_bar  = tqdm([i for i in range(state['epoch'], config['num_epochs'])])
+    stop = False 
     # Training Loop
     for epoch, _ in enumerate(epoch_bar):
 
@@ -167,8 +173,7 @@ def train(config):
         mem_idx = 0
 
         # Compute the Optimal Transport Solver
-        for ots_iter in range(1, dset_size//2):
-
+        for ots_iter in range(0, dset_size//2): #was 1
             history['iter'] = ots_iter
 
             psi_optim.zero_grad()
@@ -177,7 +182,7 @@ def train(config):
             z_batch = torch.randn(config['batch_size'], config['z_dim']).to(device)
             y_fake  = G(z_batch) # [B, dset_size]
             
-#             # Add Gaussian noise to the output of the generator function and to the data with tessellation vectors
+            # Add Gaussian noise to the output of the generator function and to the data with tessellation vectors
             t1 = tess_var*torch.randn(y_fake.shape[0], y_fake.shape[1]).to(device)
             t2 = tess_var*torch.randn(dataloader.shape[0], dataloader.shape[1]).to(device)
             
@@ -202,8 +207,9 @@ def train(config):
 
             # Update memory tensors
             mu[mem_idx] = z_batch.data.cpu().numpy().tolist()
+            #print("OTS:", mem_idx, np.asarray(mu[mem_idx]).shape)
             transfer[mem_idx] = hit.data.cpu().numpy().tolist()
-            mem_idx = (mem_idx + 1) % config['mem_size']
+            mem_idx = (mem_idx + 1) % config['mem_size'] 
 
             # Update losses
             history['losses']['ot_loss'].append(loss.item())
@@ -221,14 +227,25 @@ def train(config):
             if ots_iter > (dset_size//3):
                 if  stop_min <= np.mean(history['losses']['ot_loss']) <= stop_max:
                     stop_counter += 1
+                    print("stopped")
+                    stop = True
+                    #train_state = utils.get_checkpoint(history['epoch'], checkpoint_kwargs, config)
+                    #torch.save(train_state, '/home/plutku01/projects/particle_generator/saved_gen.pth')
                     break
-
+        
+        if stop == True:
+            break
         # Compute the Optimal Fitting Transport Plan
-        for fit_iter in range(config['mem_size']):
+        for fit_iter in range(config['mem_size']):# - 1):
             G_optim.zero_grad()
+            # print("fit_iter: ", fit_iter)
+            # print("mu[fit_iter]: ", type(mu[fit_iter]))
+            #inf = np.asarray(mu[fit_iter])
+            #print("FIT:", fit_iter, inf.shape)
 
             # Retrieve stored batch of generated samples
             z_batch = torch.tensor(mu[fit_iter]).to(device)
+            #print(z_batch.shape)
             y_fake  = G(z_batch) # G'(z)
             
             # Get Transfer plan from OTS: T(G_{t-1}(z))

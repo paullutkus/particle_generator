@@ -71,8 +71,8 @@ def train(config):
     # (Credit: Chen, arXiv:1906.03471, GitHub: https://github.com/chen0706/EWM)
     from torch.utils.cpp_extension import load
     my_ops = load(name = "my_ops",
-                  sources = ["W1_extension/my_ops.cpp",
-                             "W1_extension/my_ops_kernel.cu"],
+                  sources = ["../W1_extension/my_ops.cpp",
+                             "../W1_extension/my_ops_kernel.cu"],
                   verbose = False)
     import my_ops
 

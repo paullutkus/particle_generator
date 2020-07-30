@@ -1,5 +1,5 @@
 #!/bin/bash
-CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=0 python train.py \
+CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=0 python3 ../train.py \
 --gpu 0 \
 --batch_size 250 \
 --num_epochs 100 \
@@ -14,10 +14,10 @@ CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=0 python train.py \
 --psi_lr 1e-1 \
 --mem_size 5000 \
 --dataset 64 \
---l_dim 384 \
+--l_dim 512 \
 --beta 0.5 \
 --tess_var 0.75 \
 --ewm_target conv \
---data_root /media/hdd1/kai/particle_generator/code_vectors_target/ \
---save_root /media/hdd1/kai/particle_generator/experiments/ \
---vec_root /media/hdd1/kai/particle_generator/code_vectors_test/
+--data_root /home/plutku01/projects/particle_generator/code_vectors_target/ \
+--save_root /home/plutku01/projects/particle_generator/experiments/ \
+--vec_root /home/plutku01/projects/particle_generator/code_vectors_test/ 
