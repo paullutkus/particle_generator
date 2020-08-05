@@ -141,8 +141,10 @@ def ae(model, config):
         AE = model.AutoEncoder(**ae_kwargs).to(config['gpu'])
     elif config['model'] == 'conv_ae':
         AE = model.ConvAutoEncoder(**ae_kwargs).to(config['gpu'])
-    else:
+    elif config['model'] == 'res_ae':
         AE = model.ResAutoEncoder(**ae_kwargs).to(config['gpu'])
+    else:
+        raise Exception("Model not found!")
 
     print(AE)
     input('Press any key to launch')
@@ -162,8 +164,12 @@ def ae(model, config):
     # Set up training function 
     if config['model'] == 'ae':
         train_fn = train_fns.AE_train_fn(AE, AE_optim, loss_fn, config)
-    else:
+    elif config['model'] == 'conv_ae':
         train_fn = train_fns.Conv_AE_train_fn(AE, AE_optim, loss_fn, config)
+    elif config['model'] == 'res_ae':
+        train_fn = train_fns.Res_AE_train_fn(AE, AE_optim, loss_fn, config)
+    else:
+        raise Exception("No training function found!")
 
     # Return model, optimizer, and model training function
     return {'AE':AE, 'AE_optim':AE_optim, 'train_fn':train_fn}

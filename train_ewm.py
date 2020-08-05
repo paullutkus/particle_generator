@@ -79,6 +79,10 @@ def train(config):
                   verbose = False)
     import my_ops
 
+    train_cpkt = True
+    if train_cpkt: state = torch.load('/home/plutku01/projects/particle_generator/saved_gen.pth')
+
+
     # Set up GPU device ordinal - if this fails, use CUDA_LAUNCH_BLOCKING environment param...
     device = torch.device(config['gpu'])
 
@@ -86,19 +90,20 @@ def train(config):
     emw_kwargs = setup_model.ewm_kwargs(config)
 
     # Setup model on GPU
-    G = ewm_G(**emw_kwargs).to(device)
-    #state = torch.load('/home/plutku01/projects/particle_generator/saved_gen.pth')
-    #G.load_state_dict(state['state_dict'])
-    G.weights_init()
-    #G.load_state_dict(torch.load('/home/plutku01/projects/particle_generator/saved_gen.pth'))
-
+    G = ewm_G(**emw_kwargs).to(device) 
+    if train_ckpt == True:
+        G.load_state_dict(state['state_dict'])
+    else: 
+        G.weights_init()
+    
     print(G)
     input('Press any key to launch')
 
     # Setup model optimizer
     model_params = {'g_params': G.parameters()}
     G_optim = utils.get_optim(config, model_params)
-    #G_optim.load_state_dict(state['optimizer'])
+    if train_ckpt == True: 
+        G_optim.load_state_dict(state['optimizer'])
 
     # Set up full_dataloader (single batch)
     dataloader = utils.get_dataloader(config) # Full Dataloader
@@ -109,14 +114,22 @@ def train(config):
     dataloader = dataloader.view(dset_size, -1).to(device)
 
     # Set up psi optimizer
-    psi = torch.zeros(dset_size, requires_grad=True).to(device).detach().requires_grad_(True).to(device)
+    if train_ckpt == True:
+        psi = state['psi']
+    else:
+        psi = torch.zeros(dset_size, requires_grad=True).to(device).detach().requires_grad_(True).to(device)
+        
     psi_optim = torch.optim.Adam([psi], lr=config['psi_lr'])
+    if train_ckpt == True:
+        psi_optim.load_state_dict(state['psi_optim'])
 
     # Set up directories for saving training stats and outputs
     config = utils.directories(config)
 
     # Set up dict for saving checkpoints
     checkpoint_kwargs = {'G':G, 'G_optim':G_optim}
+    train_checkpoint_kwargs = {'G':G, 'G_optim':G_optim,
+                                'psi':psi, 'psi_optim':psi_optim}
 
     # Variance argument for the tessellation vectors
     tess_var = config['tess_var']**0.5
@@ -155,8 +168,11 @@ def train(config):
     stop_counter = 0
     
     # Set up progress bar for terminal output and enumeration
-    epoch_bar  = tqdm([i for i in range(config['num_epochs'])])
-    #epoch_bar  = tqdm([i for i in range(state['epoch'], config['num_epochs'])])
+    if train_ckpt == True:
+        epoch_bar  = tqdm([i for i in range(state['epoch'], config['num_epochs'])])
+    else:
+        epoch_bar  = tqdm([i for i in range(config['num_epochs'])])
+
     stop = False 
     # Training Loop
     for epoch, _ in enumerate(epoch_bar):
@@ -228,13 +244,15 @@ def train(config):
                 if  stop_min <= np.mean(history['losses']['ot_loss']) <= stop_max:
                     stop_counter += 1
                     print("stopped")
-                    stop = True
+                    #stop = True
                     #train_state = utils.get_checkpoint(history['epoch'], checkpoint_kwargs, config)
                     #torch.save(train_state, '/home/plutku01/projects/particle_generator/saved_gen.pth')
-                    break
+                    #break
         
+        '''
         if stop == True:
             break
+        '''
         # Compute the Optimal Fitting Transport Plan
         for fit_iter in range(config['mem_size']):# - 1):
             G_optim.zero_grad()
