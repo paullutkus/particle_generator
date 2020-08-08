@@ -21,6 +21,8 @@ class ConvEncoder(nn.Module):
     '''
     def __init__(self, depth, l_dim):
         super().__init__()
+        for a, b in zip(depth, depth[1:]):
+            print(a, b)
         self.conv_blocks = nn.Sequential(*[ConvBlock_BN(in_f, out_f) for in_f, out_f
                                            in zip(depth, depth[1:])])
         

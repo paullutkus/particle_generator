@@ -79,8 +79,8 @@ def train(config):
                   verbose = False)
     import my_ops
 
-    train_cpkt = True
-    if train_cpkt: state = torch.load('/home/plutku01/projects/particle_generator/saved_gen.pth')
+    train_ckpt = True
+    if train_ckpt: state = torch.load('/home/plutku01/projects/particle_generator/gen_ckpt.pth')
 
 
     # Set up GPU device ordinal - if this fails, use CUDA_LAUNCH_BLOCKING environment param...
@@ -168,15 +168,20 @@ def train(config):
     stop_counter = 0
     
     # Set up progress bar for terminal output and enumeration
+    print(state['epoch']+config['num_epochs']) 
     if train_ckpt == True:
-        epoch_bar  = tqdm([i for i in range(state['epoch'], config['num_epochs'])])
+        epoch_bar  = tqdm([i for i in range(state['epoch'], config['num_epochs']+(2*state['epoch']))], initial=state['epoch'])
+        epoch_init = state['epoch']
     else:
         epoch_bar  = tqdm([i for i in range(config['num_epochs'])])
+        epoch_init = 0
+        
 
     stop = False 
     # Training Loop
     for epoch, _ in enumerate(epoch_bar):
-
+        
+        epoch += epoch_init
         history['epoch'] = epoch
 
         # Set up memory lists: 
@@ -239,20 +244,21 @@ def train(config):
 #                 # Emperical stopping criterion
 #                 if stop:
 #                     break
+            
+            if epoch == 10 and train_ckpt == False:
+                train_state = utils.ewm_train_checkpoint(history['epoch'], train_checkpoint_kwargs)
+                torch.save(train_state, '/home/plutku01/projects/particle_generator/gen_ckpt.pth')
+                stop = True
 
             if ots_iter > (dset_size//3):
                 if  stop_min <= np.mean(history['losses']['ot_loss']) <= stop_max:
                     stop_counter += 1
                     print("stopped")
-                    #stop = True
-                    #train_state = utils.get_checkpoint(history['epoch'], checkpoint_kwargs, config)
-                    #torch.save(train_state, '/home/plutku01/projects/particle_generator/saved_gen.pth')
-                    #break
-        
-        '''
+                    stop = True
+                             
         if stop == True:
             break
-        '''
+        
         # Compute the Optimal Fitting Transport Plan
         for fit_iter in range(config['mem_size']):# - 1):
             G_optim.zero_grad()

@@ -1,5 +1,5 @@
 #!/bin/bash
-CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=0,1 python3 ../train_ewm_convG.py \
+CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=1 python3 ../train_ewm_convG.py \
 --gpu 0 \
 --batch_size 250 \
 --num_epochs 10 \
@@ -15,7 +15,7 @@ CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=0,1 python3 ../train_ewm_convG.py \
 --psi_lr 1e-1 \
 --mem_size 5000 \
 --dataset 64 \
---l_dim 6 \
+--l_dim 8 \
 --beta 0.5 \
 --ewm_target conv \
 --data_root /home/plutku01/data/LArCV/train/  \

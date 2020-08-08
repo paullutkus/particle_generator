@@ -158,7 +158,7 @@ def get_checkpoint(epoch, kwargs, config):
                        'optimizer'  : kwargs['G_optim'].state_dict() } )
     return dict
 
-def ewm_train_checkpoint(epoch, kwargs, config):
+def ewm_train_checkpoint(epoch, kwargs):
     '''
         Function for generating an ewm checkpoint for pausing
         and resuming training
@@ -166,9 +166,9 @@ def ewm_train_checkpoint(epoch, kwargs, config):
     dict = {}
     dict.update( { 'epoch'      : epoch,
                    'state_dict' : kwargs['G'].state_dict(),
-                   'optimizer'  : kwargs['G_optim'].state_dict() 
-                   'psi'        : kwargs['psi']
-                   'psi_optim'  : kwargs['psi_optim'] } )
+                   'optimizer'  : kwargs['G_optim'].state_dict(), 
+                   'psi'        : kwargs['psi'],
+                   'psi_optim'  : kwargs['psi_optim'].state_dict() } )
     return dict
 
 def save_checkpoint(checkpoint, config):

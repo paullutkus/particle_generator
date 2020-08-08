@@ -180,6 +180,8 @@ def train(config):
 
     # Set up dict for saving checkpoints
     checkpoint_kwargs = {'G':G, 'G_optim':G_optim}
+    train_checkpoint_kwargs = {'G':G, 'G_optim':G_optim,
+                                'psi':psi, 'psi_optim':psi_optim}
 
     # Set up stats logging
     hist_dict = {'hist_min':[], 'hist_max':[], 'ot_loss':[]}
@@ -249,6 +251,11 @@ def train(config):
             # of the dataset. This is the only computation that generalizes.
             loss = -torch.mean(psi[hit])
 
+            L1 = 0
+            for img in y_fake:
+                L1 += img.sum()
+            loss += (1e-6 * L1)
+        
             # Backprop
             loss.backward()
             psi_optim.step()
@@ -273,7 +280,7 @@ def train(config):
 #                 hist_dict, stop = utils.update_histogram(transfer, history, config)
 #                 # Emperical stopping criterion
 #                 if stop:
-#                     break
+#                     break                       
 
         # Compute the Optimal Fitting Transport Plan
         print("\nFitting Optimal Transport Plan")
@@ -296,7 +303,12 @@ def train(config):
             # Compute Wasserstein distance between G and T
 #             G_loss = torch.mean(torch.abs(y0_hit - y_fake)) * l_dim
             G_loss = loss_fn(y_fake, y0_hit)
-            
+           
+            L1 = 0
+            for img in y_fake:
+                L1 += img.sum()
+            G_loss += (1e-6 * L1)
+
             # Backprop
             G_loss.backward() # Gradient descent
             G_optim.step()
@@ -321,6 +333,10 @@ def train(config):
         # Save a fixed sample of the generator's output at the end of FIT
         sample = G(z_fixed).view(-1, 1, config['dataset'], config['dataset'])
         utils.save_sample(sample, epoch, fit_iter, config['fixed_samples'])
+
+        train_state = utils.ewm_train_checkpoint(history['epoch'], train_checkpoint_kwargs)
+        torch.save(train_state, '/home/plutku01/projects/particle_generator/convGen_ckpt.pth')
+
 
     # Save a checkpoint at end of training
     checkpoint = utils.get_checkpoint(history['epoch'], checkpoint_kwargs, config)

@@ -70,6 +70,7 @@ class ewm_convG(nn.Module):
     def __init__(self, l_dim, dec_sizes, im_size):
         super(ewm_convG, self).__init__()
         self.deconv_sizes = [l_dim] + [*dec_sizes]
+        print(self.deconv_sizes)
         self.main = nn.Sequential(*[DeconvBlock(in_f, out_f)
                                   for in_f, out_f in zip(self.deconv_sizes, self.deconv_sizes[1:-1])]
         )
