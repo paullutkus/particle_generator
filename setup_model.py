@@ -101,7 +101,7 @@ def get_ae_kwargs(config):
             # Update kwarg dicts
             # Decoder is the reverse of the encoder
             kwargs.update({'enc_depth' : [1] + depth,
-                           'dec_depth' : depth[1:len(depth)][::-1] + [4] + [1],
+                           'dec_depth' : depth[1:len(depth)][::-1] + [4] + [1], # I changed this (causes problems with loading from ckpt)
                            'l_dim'     : l_dim })
         else: # Manually set the values for the MNIST experiment
             kwargs.update( { 'enc_depth': [1, 16, 4],
@@ -116,11 +116,13 @@ def get_ae_kwargs(config):
             depth   = [config['depth']] * config['n_layers'] # [32, 32, 32, 32]
             divisor = lambda: [ (yield 2**i) for i in range(config['n_layers']) ]
             depth   = [a//b for a,b in zip(depth, [*divisor()])][::-1] # [4, 8, 16, 32]
+            strides = [1] + (config['n_layers'] * [2])
             # Update kwarg dicts
             # Decoder is the reverse of the encoder
             kwargs.update({'enc_depth' : [1] + depth,
-                           'dec_depth' : depth[1:len(depth)][::-1] + [1],
-                           'l_dim'     : l_dim })
+                           'dec_depth' : depth[::-1], # + [1],
+                           'l_dim'     : l_dim,
+                           'strides'   : strides})
         else: # Manually set the values for the MNIST experiment
             kwargs.update( { 'enc_depth': [1, 16, 4],
                              'dec_depth': [16, 1],

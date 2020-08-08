@@ -4,14 +4,14 @@ CUDA_VISIBLE_DEVICES=0,1 python3 ../train.py \
 --gpu 1 \
 --dataset 64 \
 --batch_size 250 \
---num_epochs 500 \
+--num_epochs 100 \
 --sample_size 16 \
 --shuffle True \
 --drop_last True \
 --num_workers 8 \
 --model res_ae \
---depth 32 \
---n_layers 4 \
+--depth 64 \
+--n_layers 5 \
 --l_dim 512 \
 --ae_lr 1e-3 \
 --ae_opt adam \
