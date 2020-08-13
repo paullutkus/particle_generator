@@ -254,7 +254,7 @@ def train(config):
             L1 = 0
             for img in y_fake:
                 L1 += img.sum()
-            loss += (1e-6 * L1)
+            loss += (1e-5 * L1)
         
             # Backprop
             loss.backward()
@@ -307,7 +307,7 @@ def train(config):
             L1 = 0
             for img in y_fake:
                 L1 += img.sum()
-            G_loss += (1e-6 * L1)
+            G_loss += (1e-5 * L1)
 
             # Backprop
             G_loss.backward() # Gradient descent
