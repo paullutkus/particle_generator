@@ -18,6 +18,6 @@ CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=1 python3 ../train_ewm_convG.py \
 --l_dim 8 \
 --beta 0.5 \
 --ewm_target conv \
---data_root /home/plutku01/data/LArCV/train/  \
+--data_root /home/plutku01/data/LArCV/train/single_particle/  \
 --save_root /home/plutku01/projects/particle_generator/experiments/ \
 --ewm_root /home/plutku01/projects/particle_generator/experiments/ewm_models/conv_ewm/evaluated_models/ \

@@ -168,7 +168,6 @@ def train(config):
     stop_counter = 0
     
     # Set up progress bar for terminal output and enumeration
-    print(state['epoch']+config['num_epochs']) 
     if train_ckpt == True:
         epoch_bar  = tqdm([i for i in range(state['epoch'], config['num_epochs']+(2*state['epoch']))], initial=state['epoch'])
         epoch_init = state['epoch']
@@ -244,11 +243,6 @@ def train(config):
 #                 # Emperical stopping criterion
 #                 if stop:
 #                     break
-            
-            if epoch == 10 and train_ckpt == False:
-                train_state = utils.ewm_train_checkpoint(history['epoch'], train_checkpoint_kwargs)
-                torch.save(train_state, '/home/plutku01/projects/particle_generator/gen_ckpt.pth')
-                stop = True
 
             if ots_iter > (dset_size//3):
                 if  stop_min <= np.mean(history['losses']['ot_loss']) <= stop_max:
@@ -306,6 +300,9 @@ def train(config):
             if (fit_iter % 500 == 0):
                 avg_loss = np.mean(history['losses']['fit_loss'])
                 print('FIT Iteration {} | Epoch {} | Avg Loss Value: {}'.format(fit_iter, epoch, round(avg_loss,3)))
+
+        train_state = utils.ewm_train_checkpoint(history['epoch'], train_checkpoint_kwargs)
+        torch.save(train_state, '/home/plutku01/projects/particle_generator/gen_ckpt.pth')
 
     # Save a checkpoint at end of training
     checkpoint = utils.get_checkpoint(history['epoch'], checkpoint_kwargs, config)
