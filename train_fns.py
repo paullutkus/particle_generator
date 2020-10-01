@@ -467,3 +467,65 @@ def Res_AE_train_fn(AE, AE_optim, loss_fn, config):
 
         return metrics
     return train
+
+def Var_Res_AE_train_fn(AE, AE_optim, loss_fn, config):
+    '''
+        Variational AE training function
+        Does: Initializes the training function for the AE model.
+        Args: - AE (Torch neural network): Residual Autoencoder Model
+              - AE_optim (Torch optimizer function): AE optimizer (Adam or SGD)
+              - loss_fn (Torch loss function): AE loss function
+              - config (dict): config dictionary of parameters
+    '''
+    def train(x, itr, epoch):
+        '''
+            AE training function
+            Does: Trains the AE model
+            Args: x (Torch tensor): Real data input image
+            Returns: list of training metrics
+        '''
+        # Make sure model is in training mode
+        AE.train()
+
+        # Move input to gpu -- no need to flatten
+        x = x.to(config['gpu'])
+
+        # Forward pass
+        output, mu, logvar = AE(x)
+
+        # Compute L1 regularization
+        # L1 = 0
+        # for param in AE.parameters():
+            # L1 += param.abs().sum()
+
+        # Compare output to real data and add L1 reg.
+        reconst_loss = loss_fn(output, x) # + (1e-6 * L1)
+        kl_div = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+        loss = reconst_loss + kl_div
+
+        # Backprop and update weights
+        AE_optim.zero_grad()
+        loss.backward()
+        AE_optim.step()
+
+        # TODO: check that the samples are saving correctly
+        # Save output periodically - concatenate the model outputs with the
+        # images it was supposed to reconstruct in order to visualize the
+        # model evolution during training.
+        if itr % 20 == 0:
+            # Arrange training data and model outputs on
+            # alternating rows for easy visual comparison.
+            row1 = x[0:config['sample_size']//2, :]
+            row2 = output[0:config['sample_size']//2, :]
+            row3 = x[config['sample_size']//2:config['sample_size'], :]
+            row4 = output[config['sample_size']//2:config['sample_size'], :]
+            sample = torch.cat([row1, row2, row3, row4])
+            sample = sample.view(sample.size(0), 1,
+                                 config['dataset'], config['dataset'])
+            utils.save_sample(sample, epoch, itr, config['random_samples'])
+
+        # Return training metrics
+        metrics = { 'ae_loss' : float(loss.item()) }
+
+        return metrics
+    return train

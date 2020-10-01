@@ -244,11 +244,11 @@ def train(config):
 #                 if stop:
 #                     break
 
-            if ots_iter > (dset_size//3):
-                if  stop_min <= np.mean(history['losses']['ot_loss']) <= stop_max:
-                    stop_counter += 1
-                    print("stopped")
-                    stop = True
+            #if ots_iter > (dset_size//3):
+            if  stop_min <= np.mean(history['losses']['ot_loss']) <= stop_max:
+                stop_counter += 1
+                print("stopped")
+                #stop = True
                              
         if stop == True:
             break

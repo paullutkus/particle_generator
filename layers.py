@@ -110,8 +110,10 @@ class DoubleRes(nn.Module):
         self.res2 = Block(planes, planes, 1)
 
     def forward(self, x):
+        #print(x.shape)
         out = self.res1(x)
         out = self.res2(out)
+        #print(x.shape)
         return out
 
 

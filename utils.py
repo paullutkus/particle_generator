@@ -380,7 +380,7 @@ def select_test_vecs(config):
 def MNIST(config):
     transform = transforms.Compose( [transforms.ToTensor(),
                                      transforms.Normalize([0.5],[0.5])])
-    data = datasets.MNIST(root='./data', train=True, download=True,
+    data = datasets.MNIST(root='/home/plutku01/data/mnist', train=True, download=True,
                           transform=transform)
     dataloader = DataLoader(data, **get_loader_kwargs(config))
     return dataloader
@@ -427,7 +427,8 @@ def get_full_dataloader(config):
         return data
 
 def get_dataloader(config):
-    config = select_dataset(config)
+    if (not config['MNIST']):
+        config = select_dataset(config)
     if (config['MNIST']):
         if 'ewm' in config['model']:
             raise Exception("EWM model is not set up to train on MNIST data")

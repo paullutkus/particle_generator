@@ -124,9 +124,61 @@ def get_ae_kwargs(config):
                            'l_dim'     : l_dim,
                            'strides'   : strides})
         else: # Manually set the values for the MNIST experiment
+            '''
             kwargs.update( { 'enc_depth': [1, 16, 4],
                              'dec_depth': [16, 1],
                              'l_dim'    : 4})
+            '''
+            # Compute the depth of the feature maps, based on the number of
+            # specified layers. If depth is not divisibe by 4, warn
+            if config['depth'] % 4 != 0:
+                raise ValueError("WARNING: The depth of the feature maps must be divisible by 4")
+            depth   = [config['depth']] * config['n_layers'] # [32, 32, 32, 32]
+            divisor = lambda: [ (yield 2**i) for i in range(config['n_layers']) ]
+            depth   = [a//b for a,b in zip(depth, [*divisor()])][::-1] # [4, 8, 16, 32]
+            strides = [1] + (config['n_layers'] * [2])
+            # Update kwarg dicts
+            # Decoder is the reverse of the encoder
+            kwargs.update({'enc_depth' : [1] + depth,
+                           'dec_depth' : depth[::-1], # + [1],
+                           'l_dim'     : l_dim,
+                           'strides'   : strides})
+    elif config['model'] == 'var_res_ae':
+        if not config['MNIST']:
+            # Compute the depth of the feature maps, based on the number of
+            # specified layers. If depth is not divisibe by 4, warn
+            if config['depth'] % 4 != 0:
+                raise ValueError("WARNING: The depth of the feature maps must be divisible by 4")
+            depth   = [config['depth']] * config['n_layers'] # [32, 32, 32, 32]
+            divisor = lambda: [ (yield 2**i) for i in range(config['n_layers']) ]
+            depth   = [a//b for a,b in zip(depth, [*divisor()])][::-1] # [4, 8, 16, 32]
+            strides = [1] + (config['n_layers'] * [2])
+            # Update kwarg dicts
+            # Decoder is the reverse of the encoder
+            kwargs.update({'enc_depth' : [1] + depth,
+                           'dec_depth' : depth[::-1], # + [1],
+                           'l_dim'     : l_dim,
+                           'strides'   : strides})
+        else: # Manually set the values for the MNIST experiment
+            '''
+            kwargs.update( { 'enc_depth': [1, 16, 4],
+                             'dec_depth': [16, 1],
+                             'l_dim'    : 4})
+            '''
+            # Compute the depth of the feature maps, based on the number of
+            # specified layers. If depth is not divisibe by 4, warn
+            if config['depth'] % 4 != 0:
+                raise ValueError("WARNING: The depth of the feature maps must be divisible by 4")
+            depth   = [config['depth']] * config['n_layers'] # [32, 32, 32, 32]
+            divisor = lambda: [ (yield 2**i) for i in range(config['n_layers']) ]
+            depth   = [a//b for a,b in zip(depth, [*divisor()])][::-1] # [4, 8, 16, 32]
+            strides = [1] + (config['n_layers'] * [2])
+            # Update kwarg dicts
+            # Decoder is the reverse of the encoder
+            kwargs.update({'enc_depth' : [1] + depth,
+                           'dec_depth' : depth[::-1], # + [1],
+                           'l_dim'     : l_dim,
+                           'strides'   : strides})
     else:
         raise ValueError('Valid AutoEncoder model not selected!')
     return kwargs, config
@@ -145,6 +197,8 @@ def ae(model, config):
         AE = model.ConvAutoEncoder(**ae_kwargs).to(config['gpu'])
     elif config['model'] == 'res_ae':
         AE = model.ResAutoEncoder(**ae_kwargs).to(config['gpu'])
+    elif config['model'] == 'var_res_ae':
+        AE = model.Var_ResAutoEncoder(**ae_kwargs).to(config['gpu'])
     else:
         raise Exception("Model not found!")
 
@@ -160,6 +214,8 @@ def ae(model, config):
         loss_fn = nn.MSELoss().to(config['gpu'])
     elif 'bce' in config['loss_fn']:
         loss_fn = nn.BCELoss().to(config['gpu'])
+    elif 'bce_logits' in config['loss_fn']:
+        loss_fn = nn.BCEWithLogitsLoss().to(config['gpu'])
     else:
         raise Exception("No AutoEncoder loss function selected!")
 
@@ -170,6 +226,8 @@ def ae(model, config):
         train_fn = train_fns.Conv_AE_train_fn(AE, AE_optim, loss_fn, config)
     elif config['model'] == 'res_ae':
         train_fn = train_fns.Res_AE_train_fn(AE, AE_optim, loss_fn, config)
+    elif config['model'] == 'var_res_ae':
+        train_fn = train_fns.Var_Res_AE_train_fn(AE, AE_optim, loss_fn, config)
     else:
         raise Exception("No training function found!")
 

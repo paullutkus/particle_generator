@@ -43,8 +43,8 @@ class ResEncoder(nn.Module):
                                                 stride=2)
         '''
         # self.avgpool = nn.AvgPool2d(7, stride=1, padding=3)
-        self.fc = nn.Linear(1024, l_dim)
-        self.fc.weight.data.copy_(torch.eye(l_dim, 1024))
+        self.fc = nn.Linear(1568, l_dim)
+        self.fc.weight.data.copy_(torch.eye(l_dim, 1568))
         self.relu = nn.ReLU(inplace=True)
 
     def _make_encoding_layer(self, inplanes, planes, stride=2):
@@ -57,9 +57,8 @@ class ResEncoder(nn.Module):
         x = self.bn1(x)
         x = self.maxpool(x)
         '''
-
         x = self.res_enc_blocks(x)
-
+        #print(x.shape)
         '''
         x = self.layer1(x)
         x = self.layer2(x)
@@ -68,7 +67,9 @@ class ResEncoder(nn.Module):
         x = self.layer5(x)
         '''
         # x = self.avgpool(x)
+
         x = x.view(x.size(0), -1)
+        
         x = self.fc(x)
         x = self.relu(x)
 
@@ -80,8 +81,8 @@ class ResDecoder(nn.Module):
     def __init__(self, l_dim, depth, inplanes=4, input_channels=1):
         super(ResDecoder, self).__init__()
         self.inplanes = inplanes
-        self.fc = nn.Linear(l_dim, 1024)
-        self.fc.weight.data.copy_(torch.eye(1024, l_dim))
+        self.fc = nn.Linear(l_dim, 1568)
+        self.fc.weight.data.copy_(torch.eye(1568, l_dim))
         self.relu = nn.ReLU(inplace=True)
 
         self.res_dec_blocks = nn.Sequential(*[ConvTransposeLayer(in_f, out_f, out_f) for in_f, out_f
@@ -115,7 +116,7 @@ class ResDecoder(nn.Module):
     def forward(self, x):
         x = self.fc(x)
         x = self.relu(x)
-        x = torch.reshape(x, (-1, 64, 4, 4))
+        x = torch.reshape(x, (-1, 32, 7, 7))
         x = self.res_dec_blocks(x)
         x = self.double_res(x) 
         '''
