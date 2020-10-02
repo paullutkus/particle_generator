@@ -6,7 +6,7 @@ CUDA_VISIBLE_DEVICES=0,1 python3 ../train.py \
 --gpu 0 \
 --dataset 64 \
 --batch_size 250 \
---num_epochs 150 \
+--num_epochs 200 \
 --sample_size 16 \
 --shuffle True \
 --drop_last True \

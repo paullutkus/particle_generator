@@ -430,8 +430,8 @@ def get_dataloader(config):
     if (not config['MNIST']):
         config = select_dataset(config)
     if (config['MNIST']):
-        if 'ewm' in config['model']:
-            raise Exception("EWM model is not set up to train on MNIST data")
+        #if 'ewm' in config['model']:
+        #    raise Exception("EWM model is not set up to train on MNIST data")
         return MNIST(config)
     elif 'ewm' in config['model']:
         return get_full_dataloader(config) # Train EWM Generator

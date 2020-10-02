@@ -1,6 +1,7 @@
 #!/bin/bash
 CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=0 python3 ../train.py \
 --gpu 0 \
+--MNIST True \
 --batch_size 250 \
 --num_epochs 100 \
 --shuffle True \

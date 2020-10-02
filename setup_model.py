@@ -246,8 +246,8 @@ def ewm_kwargs(config):
           code_vector dimension.
     '''
     ewm_kwargs = {}
-    if config['MNIST']:
-        raise Exception("EWM model is not set up to train on MNIST data ... sorry")
+    #if config['MNIST']:
+    #    raise Exception("EWM model is not set up to train on MNIST data ... sorry")
     code_size = config['l_dim']
     if config['model'] == 'ewm_conv':
         depth   = [config['depth']] * config['n_layers'] # [32, 32, 32, 32]

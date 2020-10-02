@@ -59,7 +59,7 @@ class ResDecoder(nn.Module):
         self.fc = nn.Linear(l_dim, 1568)
         self.fc.weight.data.copy_(torch.eye(1568, l_dim))
         self.relu = nn.ReLU(inplace=True)
-        self.sigmoid = nn.Sigmoid()
+        #self.sigmoid = nn.Sigmoid()
 
         self.res_dec_blocks = nn.Sequential(*[ConvTransposeLayer(in_f, out_f, out_f) for in_f, out_f
                                             in zip(depth, depth[1:])])
@@ -83,7 +83,6 @@ class ResDecoder(nn.Module):
         x = self.conv(x)
 
         return self.sigmoid(x)
-
 
 class Var_ResAutoEncoder(nn.Module):
     '''

@@ -79,7 +79,7 @@ def train(config):
                   verbose = False)
     import my_ops
 
-    train_ckpt = True
+    train_ckpt = False
     if train_ckpt: state = torch.load('/home/plutku01/projects/particle_generator/gen_ckpt.pth')
 
 
@@ -110,6 +110,12 @@ def train(config):
     dset_size  = len(dataloader) # 10000
     print('dset_size:', dset_size)
 
+    '''
+    # Converting dataloader to tensor (to use .view())
+    if config['MNIST']:
+        for img in dataloader:
+    '''        
+    
     # Flatten the dataloader into a Tensor of shape [dset_size, l_dim]
     dataloader = dataloader.view(dset_size, -1).to(device)
 
