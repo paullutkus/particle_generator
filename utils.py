@@ -378,8 +378,7 @@ def select_test_vecs(config):
     return config
 
 def MNIST(config):
-    transform = transforms.Compose( [transforms.ToTensor(),
-                                     transforms.Normalize([0.5],[0.5])])
+    transform = transforms.Compose([transforms.ToTensor()])
     data = datasets.MNIST(root='/home/plutku01/data/mnist', train=True, download=True,
                           transform=transform)
     dataloader = DataLoader(data, **get_loader_kwargs(config))

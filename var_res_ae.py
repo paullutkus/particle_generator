@@ -22,10 +22,10 @@ class Var_ResEncoder(nn.Module):
         #self.fc.weight.data.copy_(torch.eye(l_dim, 1024))
         #self.relu = nn.ReLU(inplace=True)
 
-        self.mu_fc = nn.Linear(1568, l_dim)
-        self.logvar_fc = nn.Linear(1568, l_dim)
-        self.mu_fc.weight.data.copy_(torch.eye(l_dim, 1568))
-        self.logvar_fc.weight.data.copy_(torch.eye(l_dim, 1568))
+        self.mu_fc = nn.Linear(1024, l_dim)
+        self.logvar_fc = nn.Linear(1024, l_dim)
+        self.mu_fc.weight.data.copy_(torch.eye(l_dim, 1024))
+        self.logvar_fc.weight.data.copy_(torch.eye(l_dim, 1024))
 
     def _make_encoding_layer(self, inplanes, planes, stride=2):
         return DoubleRes(BasicBlock, inplanes, planes, stride=stride)
@@ -56,10 +56,10 @@ class ResDecoder(nn.Module):
     def __init__(self, l_dim, depth, inplanes=4, input_channels=1):
         super(ResDecoder, self).__init__()
         self.inplanes = inplanes
-        self.fc = nn.Linear(l_dim, 1568)
-        self.fc.weight.data.copy_(torch.eye(1568, l_dim))
+        self.fc = nn.Linear(l_dim, 1024)
+        self.fc.weight.data.copy_(torch.eye(1024, l_dim))
         self.relu = nn.ReLU(inplace=True)
-        #self.sigmoid = nn.Sigmoid()
+        self.sigmoid = nn.Sigmoid()
 
         self.res_dec_blocks = nn.Sequential(*[ConvTransposeLayer(in_f, out_f, out_f) for in_f, out_f
                                             in zip(depth, depth[1:])])
@@ -77,12 +77,12 @@ class ResDecoder(nn.Module):
     def forward(self, x):
         x = self.fc(x)
         x = self.relu(x)
-        x = torch.reshape(x, (-1, 32, 7, 7))
+        x = torch.reshape(x, (-1, 64, 4, 4))
         x = self.res_dec_blocks(x)
         x = self.double_res(x) 
         x = self.conv(x)
 
-        return self.sigmoid(x)
+        return x 
 
 class Var_ResAutoEncoder(nn.Module):
     '''

@@ -498,10 +498,12 @@ def Var_Res_AE_train_fn(AE, AE_optim, loss_fn, config):
         # for param in AE.parameters():
             # L1 += param.abs().sum()
 
-        # Compare output to real data and add L1 reg.
+        # Compare output to real data and add L1 reg. 
+        #img_sum_penalty = 0.00001 * (torch.mean(torch.sum(torch.abs(output), dim=(1,2,3))))
+        kld_weight = 0.0000125
         reconst_loss = loss_fn(output, x) # + (1e-6 * L1)
-        kl_div = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-        loss = reconst_loss + kl_div
+        kl_div = torch.mean(-0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp(), dim=1), dim=0)
+        loss = reconst_loss + kld_weight * kl_div #+ img_sum_penalty
 
         # Backprop and update weights
         AE_optim.zero_grad()

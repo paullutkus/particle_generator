@@ -32,6 +32,7 @@ import torch
 import numpy as np
 import pandas as pd
 from PIL import Image
+from PIL import ImageFilter
 from torchvision import transforms, utils
 from torch.utils.data import Dataset, DataLoader
 
@@ -41,6 +42,7 @@ IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm',
 VALID_DSETS = ('larcv_png_512', 'larcv_png_256', 'larcv_png_128',
                'larcv_png_64' , 'larcv_png_32', 'code_vectors')
 CONV_FLAGS = ('RGB', 'L')
+FILTER_FLAGS = ('BLUR', 'NONE')
 
 # Dataloader constructor functions
 def verify_image(image_path):
@@ -148,7 +150,7 @@ def get_paths(root):
     return paths
 
 # Dataloading functions
-def pil_loader(image_path, conv_flag):
+def pil_loader(image_path, conv_flag, filter_flag):
     '''
         Does: loads an image as a pillow file and converts the image to color
               if 'RGB' conversion flag is selected, or gray scale if 'L' flag
@@ -159,6 +161,8 @@ def pil_loader(image_path, conv_flag):
     '''
     with open(image_path, 'rb') as f:
         img = Image.open(f)
+        if filter_flag == 'BLUR':
+            img = img.filter(ImageFilter.GaussianBlur(radius=2))
         return img.convert(conv_flag)
 
 # Dataset Class - batch-to-batch loading of LArCV images
@@ -183,15 +187,20 @@ class LArCV_loader(Dataset):
         e.g. particle interaction.
     '''
 
-    def __init__(self, root, transforms=None, conv_flag='L'):
+    def __init__(self, root, transforms=None, conv_flag='L', filter_flag='NONE'):
         self.root       = root
         self.paths      = get_paths(self.root)
         self.transforms = transforms
         self.conv_flag  = conv_flag
+        self.filter_flag = filter_flag 
         if self.conv_flag not in CONV_FLAGS:
             raise(RuntimeError("Conversion flag not recognized. " + "\n"
                 "Valid conversion flags are:" + ",".join(CONV_FLAGS)))
+        if self.filter_flag not in FILTER_FLAGS:
+            raise(RuntimeError("Filter flag not recognized. " + "\n"
+                "Valid filter flags are:" + ",".join(FILTER_FLAGS))) 
         print('Image conversion flag is: {}'.format(self.conv_flag))
+        print('Image filter flag is: {}'.format(self.filter_flag))
         print('Images will be loaded from subfolder of: {}'.format(self.root))
 
     def __len__(self):
@@ -204,7 +213,7 @@ class LArCV_loader(Dataset):
             Returns: - data image loaded using pil_loader function
                      - transformed data image if transform is not None
         '''
-        image = pil_loader(self.paths[index], self.conv_flag)
+        image = pil_loader(self.paths[index], self.conv_flag, self.filter_flag)
 
         if self.transforms is not None:
             image = self.transforms(image)
